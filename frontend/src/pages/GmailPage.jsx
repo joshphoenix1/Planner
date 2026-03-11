@@ -11,6 +11,7 @@ export default function GmailPage() {
   const { data: projects } = useApi(() => api.getProjects());
 
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [editingFilter, setEditingFilter] = useState(null);
   const [syncing, setSyncing] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [search, setSearch] = useState('');
@@ -41,9 +42,19 @@ export default function GmailPage() {
   };
 
   const handleCreateFilter = async (data) => {
-    await api.createEmailFilter(data);
+    if (editingFilter) {
+      await api.updateEmailFilter(editingFilter.id, data);
+    } else {
+      await api.createEmailFilter(data);
+    }
     refetchFilters();
     setShowFilterModal(false);
+    setEditingFilter(null);
+  };
+
+  const handleEditFilter = (filter) => {
+    setEditingFilter(filter);
+    setShowFilterModal(true);
   };
 
   const handleDeleteFilter = async (id) => {
@@ -157,7 +168,10 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
               <div key={filter.id} className={styles.filterCard}>
                 <div className={styles.filterHeader}>
                   <span className={styles.filterName}>{filter.name}</span>
-                  <button onClick={() => handleDeleteFilter(filter.id)}>×</button>
+                  <div className={styles.filterBtns}>
+                    <button onClick={() => handleEditFilter(filter)} title="Edit">✎</button>
+                    <button onClick={() => handleDeleteFilter(filter.id)} title="Delete">×</button>
+                  </div>
                 </div>
                 {filter.keywords && (
                   <div className={styles.filterDetail}>
@@ -275,7 +289,11 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
       {showFilterModal && (
         <FilterModal
           projects={projects || []}
-          onClose={() => setShowFilterModal(false)}
+          filter={editingFilter}
+          onClose={() => {
+            setShowFilterModal(false);
+            setEditingFilter(null);
+          }}
           onSubmit={handleCreateFilter}
         />
       )}
@@ -291,12 +309,12 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
   );
 }
 
-function FilterModal({ projects, onClose, onSubmit }) {
+function FilterModal({ projects, filter, onClose, onSubmit }) {
   const [form, setForm] = useState({
-    name: '',
-    project_id: '',  // empty = all projects
-    keywords: '',
-    from_addresses: '',
+    name: filter?.name || '',
+    project_id: filter?.project_id?.toString() || '',
+    keywords: filter?.keywords || '',
+    from_addresses: filter?.from_addresses || '',
   });
 
   const handleSubmit = (e) => {
@@ -308,7 +326,7 @@ function FilterModal({ projects, onClose, onSubmit }) {
   };
 
   return (
-    <Modal onClose={onClose} title="Create Email Filter">
+    <Modal onClose={onClose} title={filter ? "Edit Email Filter" : "Create Email Filter"}>
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.field}>
           <label>Filter Name</label>
@@ -357,7 +375,7 @@ function FilterModal({ projects, onClose, onSubmit }) {
 
         <div className={styles.modalActions}>
           <button type="button" onClick={onClose}>Cancel</button>
-          <button type="submit" className={styles.submitBtn}>Create Filter</button>
+          <button type="submit" className={styles.submitBtn}>{filter ? 'Save' : 'Create Filter'}</button>
         </div>
       </form>
     </Modal>

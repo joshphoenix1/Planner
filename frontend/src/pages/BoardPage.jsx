@@ -92,7 +92,25 @@ export default function BoardPage() {
 
   const activeTask = tasks?.find(t => t.id === activeId);
 
-  const [showNotes, setShowNotes] = useState(false);
+  const [showNotes, setShowNotes] = useState(true);
+  const [generatingNotes, setGeneratingNotes] = useState(false);
+
+  const { data: projectData, refetch: refetchProject } = useApi(() => api.getProject(projectId), [projectId]);
+
+  const handleGenerateNotes = async () => {
+    setGeneratingNotes(true);
+    try {
+      await api.generateProjectNotes(projectId);
+      refetchProject();
+    } catch (err) {
+      alert('Error generating notes: ' + err.message);
+    } finally {
+      setGeneratingNotes(false);
+    }
+  };
+
+  // Use projectData for notes (fresher data after generation)
+  const currentProject = projectData || project;
 
   return (
     <div className={styles.page}>
@@ -102,25 +120,32 @@ export default function BoardPage() {
           <h1>{project?.name || 'Board'}</h1>
         </div>
         <div className={styles.headerActions}>
-          {project?.notes && (
-            <button
-              className={styles.notesToggle}
-              onClick={() => setShowNotes(!showNotes)}
-            >
-              {showNotes ? 'Hide Notes' : 'Show Notes'}
-            </button>
-          )}
+          <button
+            className={styles.notesToggle}
+            onClick={() => setShowNotes(!showNotes)}
+          >
+            {showNotes ? 'Hide Notes' : 'Show Notes'}
+          </button>
           <button className={styles.createBtn} onClick={() => setShowTaskModal(true)}>
             + New Task
           </button>
         </div>
       </header>
 
-      {showNotes && project?.notes && (
+      {showNotes && (
         <div className={styles.notesPanel}>
-          <h3>Project Notes</h3>
+          <div className={styles.notesPanelHeader}>
+            <h3>Project Notes</h3>
+            <button
+              className={styles.generateBtn}
+              onClick={handleGenerateNotes}
+              disabled={generatingNotes}
+            >
+              {generatingNotes ? 'Generating...' : 'Generate from Emails'}
+            </button>
+          </div>
           <div className={styles.notesContent}>
-            {project.notes}
+            {currentProject?.notes || 'No notes yet. Click "Generate from Emails" to scan project emails and create notes.'}
           </div>
         </div>
       )}

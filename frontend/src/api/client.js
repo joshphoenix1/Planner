@@ -27,6 +27,7 @@ export const api = {
   createProject: (data) => request('/projects/', { method: 'POST', body: JSON.stringify(data) }),
   updateProject: (id, data) => request(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteProject: (id) => request(`/projects/${id}`, { method: 'DELETE' }),
+  generateProjectNotes: (id) => request(`/projects/${id}/generate-notes`, { method: 'POST' }),
 
   // Tasks
   getTasks: (params = {}) => {
@@ -85,6 +86,7 @@ export const api = {
     return request(`/gmail/filters${query ? `?${query}` : ''}`);
   },
   createEmailFilter: (data) => request('/gmail/filters', { method: 'POST', body: JSON.stringify(data) }),
+  updateEmailFilter: (id, data) => request(`/gmail/filters/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteEmailFilter: (id) => request(`/gmail/filters/${id}`, { method: 'DELETE' }),
   syncEmails: (projectId) => request(`/gmail/sync${projectId ? `?project_id=${projectId}` : ''}`, { method: 'POST' }),
   getEmails: (params = {}) => {

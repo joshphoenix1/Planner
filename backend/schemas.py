@@ -194,6 +194,14 @@ class EmailFilterBase(BaseModel):
 class EmailFilterCreate(EmailFilterBase):
     project_id: Optional[int] = None  # null = all projects (AI assigns)
 
+class EmailFilterUpdate(BaseModel):
+    name: Optional[str] = None
+    keywords: Optional[str] = None
+    from_addresses: Optional[str] = None
+    blocked_addresses: Optional[str] = None
+    project_id: Optional[int] = None
+    is_active: Optional[bool] = None
+
 class EmailFilter(EmailFilterBase):
     id: int
     project_id: Optional[int] = None

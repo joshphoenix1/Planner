@@ -243,6 +243,20 @@ def create_filter(filter: schemas.EmailFilterCreate, db: Session = Depends(get_d
     return db_filter
 
 
+@router.put("/filters/{filter_id}", response_model=schemas.EmailFilter)
+def update_filter(filter_id: int, update: schemas.EmailFilterUpdate, db: Session = Depends(get_db)):
+    filter = db.query(models.EmailFilter).filter(models.EmailFilter.id == filter_id).first()
+    if not filter:
+        raise HTTPException(status_code=404, detail="Filter not found")
+
+    for key, value in update.model_dump(exclude_unset=True).items():
+        setattr(filter, key, value)
+
+    db.commit()
+    db.refresh(filter)
+    return filter
+
+
 @router.delete("/filters/{filter_id}")
 def delete_filter(filter_id: int, db: Session = Depends(get_db)):
     filter = db.query(models.EmailFilter).filter(models.EmailFilter.id == filter_id).first()

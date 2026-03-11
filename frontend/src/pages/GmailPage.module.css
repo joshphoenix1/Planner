@@ -143,14 +143,25 @@
   font-weight: 500;
 }
 
-.filterHeader button {
+.filterBtns {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.filterBtns button {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 1.25rem;
+  font-size: 1rem;
   cursor: pointer;
-  padding: 0;
+  padding: 0.125rem 0.25rem;
   line-height: 1;
+  border-radius: 3px;
+}
+
+.filterBtns button:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .filterDetail {
@@ -419,6 +430,11 @@
 .field input:focus, .field select:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+.field small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 
 .modalActions {
