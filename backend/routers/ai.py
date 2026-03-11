@@ -575,7 +575,11 @@ async def get_recommendations(db: Session = Depends(get_db)):
     for c in calendar[:5]:
         calendar_summaries.append(f"- {c.title} | {c.start_time}")
 
-    prompt = f"""You are a smart project assistant. Analyze the user's current workload and provide actionable recommendations.
+    prompt = f"""You are a smart project assistant for Josh Lees. Analyze his current workload and provide actionable recommendations.
+
+IMPORTANT: The user IS Josh Lees (joshlees1@gmail.com). Do NOT recommend:
+- Contacting Josh, paying Josh, or following up with Josh
+- Any action where Josh is the recipient rather than the initiator
 
 CURRENT DATE/TIME: {now.strftime('%A, %B %d, %Y %I:%M %p')} (NZT)
 

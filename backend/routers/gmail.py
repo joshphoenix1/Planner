@@ -870,8 +870,8 @@ def sync_calendar(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def parse_ics_datetime(value: str, tzid: str = None) -> datetime:
-    """Parse ICS datetime and convert to NZT"""
+def parse_ics_datetime(value: str, tzid: str = None) -> str:
+    """Parse ICS datetime and convert to NZT, return ISO format string"""
     try:
         # Remove any extra characters
         value = value.strip()
@@ -884,7 +884,8 @@ def parse_ics_datetime(value: str, tzid: str = None) -> datetime:
             else:
                 dt = datetime.strptime(value, "%Y%m%d")
             dt = dt.replace(tzinfo=ZoneInfo("UTC"))
-            return dt.astimezone(NZT)
+            nzt_dt = dt.astimezone(NZT)
+            return nzt_dt.strftime("%Y-%m-%d %H:%M NZT")
 
         # Parse the datetime
         if "T" in value:
@@ -897,13 +898,15 @@ def parse_ics_datetime(value: str, tzid: str = None) -> datetime:
             try:
                 tz = ZoneInfo(tzid)
                 dt = dt.replace(tzinfo=tz)
-                return dt.astimezone(NZT)
+                nzt_dt = dt.astimezone(NZT)
+                return nzt_dt.strftime("%Y-%m-%d %H:%M NZT")
             except:
                 pass
 
         # Assume UTC if no timezone
         dt = dt.replace(tzinfo=ZoneInfo("UTC"))
-        return dt.astimezone(NZT)
+        nzt_dt = dt.astimezone(NZT)
+        return nzt_dt.strftime("%Y-%m-%d %H:%M NZT")
     except:
         return None
 
