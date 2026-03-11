@@ -1,0 +1,380 @@
+.page {
+  width: 100%;
+  height: calc(100vh - 3rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filterBtn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.syncBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.syncBtn:disabled {
+  opacity: 0.7;
+}
+
+.setup {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 600px;
+  margin-top: 2rem;
+}
+
+.setup h2 {
+  margin-bottom: 1rem;
+}
+
+.setup p, .setup li {
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.setup ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.setup code {
+  background: var(--bg-tertiary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.setup pre {
+  background: var(--bg-primary);
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  color: var(--accent);
+}
+
+.authBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.5rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.filterCard {
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.filterName {
+  font-weight: 500;
+}
+
+.filterHeader button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.filterDetail {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.filterDetail label {
+  color: var(--text-muted);
+  margin-right: 0.25rem;
+}
+
+.filterProject {
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-top: 0.5rem;
+}
+
+.emailList {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.emailList h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.emails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.emailCard {
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.emailCard:hover {
+  background: var(--border);
+}
+
+.emailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.375rem;
+}
+
+.sender {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.emailActions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.projectTag {
+  font-size: 0.625rem;
+  background: var(--accent);
+  color: white;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+}
+
+.blockBtn {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.emailCard:hover .blockBtn {
+  opacity: 1;
+}
+
+.blockBtn:hover {
+  background: #d97706;
+}
+
+.deleteBtn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.emailCard:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  background: #dc2626;
+}
+
+.blockedAddresses {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.5rem;
+}
+
+.blockedAddresses label {
+  color: var(--text-muted);
+  margin-right: 0.25rem;
+}
+
+.subject {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.snippet {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field input, .field select {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.625rem 0.75rem;
+  color: var(--text-primary);
+}
+
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.modalActions button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.submitBtn {
+  background: var(--accent) !important;
+  color: white !important;
+}
+
+/* Email detail */
+.emailDetail {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.emailMeta {
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.emailBody {
+  white-space: pre-wrap;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}

@@ -1,0 +1,349 @@
+.page {
+  max-width: 1200px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.addBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.testBtn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.info {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.info h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.info ol {
+  padding-left: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.info li {
+  margin-bottom: 0.375rem;
+}
+
+.info code {
+  background: var(--bg-tertiary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: var(--accent);
+}
+
+.webhook {
+  background: var(--bg-primary);
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.webhook strong {
+  margin-right: 0.5rem;
+}
+
+.webhook code {
+  background: none;
+  color: var(--success);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.groupsSection, .messagesSection {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.groupsSection h3, .messagesSection h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.groupCard {
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.groupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.groupHeader h4 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.groupId {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.deleteBtn:hover {
+  color: var(--danger);
+}
+
+.groupProject {
+  margin-bottom: 0.5rem;
+}
+
+.projectBadge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: white;
+}
+
+.keywords {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.keywords label {
+  font-weight: 500;
+}
+
+.groupStats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.enabled {
+  color: var(--success);
+}
+
+.disabled {
+  color: var(--text-muted);
+}
+
+.recentMessages {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.recentMessages strong {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.375rem;
+}
+
+.messagePreview {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  padding: 0.25rem 0;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.message {
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 0.75rem;
+  border-left: 3px solid var(--border);
+}
+
+.message.task {
+  border-left-color: var(--success);
+}
+
+.message.note {
+  border-left-color: var(--warning);
+}
+
+.messageHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  margin-bottom: 0.375rem;
+}
+
+.msgType {
+  background: var(--bg-primary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 0.625rem;
+}
+
+.sender {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.groupName {
+  color: var(--text-muted);
+}
+
+.time {
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.messageContent {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field input, .field select, .field textarea {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.625rem 0.75rem;
+  color: var(--text-primary);
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.field small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: auto;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.modalActions button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.submitBtn {
+  background: var(--accent) !important;
+  color: white !important;
+}
+
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

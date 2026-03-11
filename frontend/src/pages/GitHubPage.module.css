@@ -1,0 +1,159 @@
+.page {
+  max-width: 1000px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.connected {
+  background: var(--success);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.setup {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 500px;
+  margin-top: 2rem;
+}
+
+.setup h2 {
+  margin-bottom: 1rem;
+}
+
+.setup p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.setup code {
+  display: block;
+  background: var(--bg-primary);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  color: var(--accent);
+}
+
+.link {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.loading, .error {
+  color: var(--text-secondary);
+  padding: 2rem;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+}
+
+.cardHeader {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.cardHeader svg {
+  width: 24px;
+  height: 24px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.repoInfo h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.fullName {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.desc {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.viewBtn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.viewBtn:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.importBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.importBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.importBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.imported {
+  color: var(--success);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}

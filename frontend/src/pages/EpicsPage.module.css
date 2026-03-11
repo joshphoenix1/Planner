@@ -1,0 +1,214 @@
+.page {
+  max-width: 900px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.back {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.createBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+}
+
+.cardHeader {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.colorBar {
+  width: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.cardInfo {
+  flex: 1;
+}
+
+.cardInfo h3 {
+  font-size: 1.125rem;
+  margin-top: 0.25rem;
+}
+
+.status {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+}
+
+.status.open {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.status.in_progress {
+  background: var(--warning);
+  color: black;
+}
+
+.status.done {
+  background: var(--success);
+  color: white;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actions button {
+  background: none;
+  border: none;
+  padding: 0.375rem 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+.actions button:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.desc {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  transition: width 0.3s;
+}
+
+.progress span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.field input, .field textarea, .field select {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.625rem 0.75rem;
+  color: var(--text-primary);
+}
+
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.colors {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.colorBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.colorBtn.selected {
+  border-color: white;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.modalActions button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.submitBtn {
+  background: var(--accent) !important;
+  color: white !important;
+}
