@@ -18,6 +18,9 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
+  // Dashboard
+  getDashboard: () => request('/dashboard'),
+
   // Projects
   getProjects: () => request('/projects/'),
   getProject: (id) => request(`/projects/${id}`),

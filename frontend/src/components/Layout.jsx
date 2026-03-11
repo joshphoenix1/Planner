@@ -1,4 +1,5 @@
 import { Outlet, NavLink, useParams } from 'react-router-dom';
+import HealthDashboard from './HealthDashboard';
 import styles from './Layout.module.css';
 
 export default function Layout() {
@@ -111,6 +112,7 @@ export default function Layout() {
       </aside>
 
       <main className={styles.main}>
+        <HealthDashboard />
         <Outlet />
       </main>
     </div>

@@ -197,7 +197,7 @@
 .emailCard {
   background: var(--bg-tertiary);
   border-radius: 6px;
-  padding: 0.875rem;
+  padding: 1rem;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -295,9 +295,11 @@
 .snippet {
   font-size: 0.875rem;
   color: var(--text-muted);
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.5;
 }
 
 .empty {
@@ -362,7 +364,7 @@
 
 /* Email detail */
 .emailDetail {
-  max-height: 400px;
+  max-height: 70vh;
   overflow-y: auto;
 }
 
