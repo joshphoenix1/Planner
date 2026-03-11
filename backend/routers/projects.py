@@ -239,32 +239,39 @@ def generate_from_repo(project_id: int, db: Session = Depends(get_db)):
 
     repo_text = "\n\n".join(repo_info)
 
-    prompt = f"""Write a 2-3 sentence executive summary for this project.
+    prompt = f"""PROJECT: {project.name}
 
-PROJECT: {project.name}
+INFO:
+{repo_text[:3500]}
 
-REPO INFO:
-{repo_text[:4000]}
-
-RULES:
-- Maximum 50 words total
-- One line: what it does
-- One line: key tech (language + main framework only)
-- No headers, bullets, or markdown
-- Plain text only
-- Be specific, not generic
-
-Example good output:
-"Automated trading bot for Polymarket prediction markets. Scans opportunities, executes trades via CLOB API, auto-redeems winners. Python, WebSockets, AWS."
-
-Write the summary now:"""
+Write exactly 2 sentences. Sentence 1: what the software does. Sentence 2: tech stack. Maximum 40 words total. No preamble. Start with a verb or noun, never "Based on" or "This is"."""
 
     description = call_claude_cli(prompt)
 
     if description:
-        project.description = description
+        # Clean up common preambles
+        clean = description.strip()
+
+        # If Claude is asking for permission, generate a fallback description
+        if "permission" in clean.lower() or "Could you grant" in clean:
+            clean = f"Software project. Check repository for details."
+
+        for prefix in ["Based on", "Here's", "Here is", "This is a", "The project"]:
+            if clean.startswith(prefix):
+                # Skip the preamble line
+                parts = clean.split('\n\n', 1)
+                if len(parts) > 1:
+                    clean = parts[1].strip()
+                else:
+                    # Try to find content after colon
+                    if ':' in clean[:50]:
+                        clean = clean.split(':', 1)[1].strip()
+
+        # Remove markdown formatting
+        clean = clean.replace("**", "").replace("*", "").replace("#", "").strip()
+        project.description = clean
         db.commit()
-        return {"message": "Description generated from repo", "description": description}
+        return {"message": "Description generated from repo", "description": clean}
     else:
         return {"message": "Failed to generate description", "description": None}
 
