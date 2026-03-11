@@ -98,6 +98,26 @@
   background: var(--accent-hover);
 }
 
+.generateBtns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.descriptionContent {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.descriptionContent strong {
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
 .notesContent {
   font-size: 0.875rem;
   line-height: 1.6;

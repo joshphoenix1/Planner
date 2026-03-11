@@ -28,6 +28,7 @@ export const api = {
   updateProject: (id, data) => request(`/projects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteProject: (id) => request(`/projects/${id}`, { method: 'DELETE' }),
   generateProjectNotes: (id) => request(`/projects/${id}/generate-notes`, { method: 'POST' }),
+  generateFromRepo: (id) => request(`/projects/${id}/generate-from-repo`, { method: 'POST' }),
 
   // Tasks
   getTasks: (params = {}) => {
@@ -121,6 +122,7 @@ export const api = {
   parseWhatsApp: (content) => request('/ai/parse-whatsapp', { method: 'POST', body: JSON.stringify({ content }) }),
   planSprint: (epicId, numTasks = 5) => request(`/ai/plan-sprint/${epicId}?num_tasks=${numTasks}`, { method: 'POST' }),
   getDailyDigest: () => request('/ai/daily-digest'),
+  getRecommendations: () => request('/ai/recommendations'),
   categorizeTask: (taskId) => request(`/ai/categorize-task/${taskId}`, { method: 'POST' }),
   autoCategorizeAll: (projectId) => request(`/ai/auto-categorize-all?project_id=${projectId}`, { method: 'POST' }),
   createTaskFromText: (text, projectId) => request('/ai/create-task-from-text', {

@@ -94,6 +94,7 @@ export default function BoardPage() {
 
   const [showNotes, setShowNotes] = useState(true);
   const [generatingNotes, setGeneratingNotes] = useState(false);
+  const [generatingFromRepo, setGeneratingFromRepo] = useState(false);
 
   const { data: projectData, refetch: refetchProject } = useApi(() => api.getProject(projectId), [projectId]);
 
@@ -106,6 +107,22 @@ export default function BoardPage() {
       alert('Error generating notes: ' + err.message);
     } finally {
       setGeneratingNotes(false);
+    }
+  };
+
+  const handleGenerateFromRepo = async () => {
+    setGeneratingFromRepo(true);
+    try {
+      const result = await api.generateFromRepo(projectId);
+      if (result.description) {
+        refetchProject();
+      } else {
+        alert(result.message || 'Could not generate from repo');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setGeneratingFromRepo(false);
     }
   };
 
@@ -136,16 +153,31 @@ export default function BoardPage() {
         <div className={styles.notesPanel}>
           <div className={styles.notesPanelHeader}>
             <h3>Project Notes</h3>
-            <button
-              className={styles.generateBtn}
-              onClick={handleGenerateNotes}
-              disabled={generatingNotes}
-            >
-              {generatingNotes ? 'Generating...' : 'Generate from Emails'}
-            </button>
+            <div className={styles.generateBtns}>
+              <button
+                className={styles.generateBtn}
+                onClick={handleGenerateNotes}
+                disabled={generatingNotes}
+              >
+                {generatingNotes ? 'Generating...' : 'From Emails'}
+              </button>
+              <button
+                className={styles.generateBtn}
+                onClick={handleGenerateFromRepo}
+                disabled={generatingFromRepo}
+              >
+                {generatingFromRepo ? 'Analyzing...' : 'From Repo'}
+              </button>
+            </div>
           </div>
+          {currentProject?.description && (
+            <div className={styles.descriptionContent}>
+              <strong>Description:</strong>
+              <div>{currentProject.description}</div>
+            </div>
+          )}
           <div className={styles.notesContent}>
-            {currentProject?.notes || 'No notes yet. Click "Generate from Emails" to scan project emails and create notes.'}
+            {currentProject?.notes || 'No notes yet. Click "From Emails" to generate from project emails, or "From Repo" to analyze the git repository.'}
           </div>
         </div>
       )}

@@ -280,7 +280,7 @@ def matches_filter(f, subject: str, body: str, sender: str) -> bool:
     # Check keywords (must match if specified)
     keyword_match = True
     if f.keywords and f.keywords.strip():
-        keywords = [k.strip().lower() for k in f.keywords.split(",") if k.strip()]
+        keywords = [k.strip().strip('"\'').lower() for k in f.keywords.split(",") if k.strip()]
         if keywords:
             keyword_match = any(k in subject.lower() or k in body.lower() for k in keywords)
 
@@ -349,7 +349,7 @@ def sync_emails(project_id: Optional[int] = None, max_emails: int = 50, db: Sess
             search_terms = []
             if f.keywords:
                 for kw in f.keywords.split(","):
-                    kw = kw.strip()
+                    kw = kw.strip().strip('"\'')
                     if kw:
                         search_terms.append(("SUBJECT", kw))
                         search_terms.append(("BODY", kw))

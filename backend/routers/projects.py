@@ -113,6 +113,162 @@ def delete_project(project_id: int, db: Session = Depends(get_db)):
     return {"message": "Project deleted"}
 
 
+@router.post("/{project_id}/generate-from-repo")
+def generate_from_repo(project_id: int, db: Session = Depends(get_db)):
+    """Generate project description from git repo analysis"""
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    repo_info = []
+
+    # Try to find local repo path
+    project_name = project.name.lower().replace(" ", "-").replace("_", "-")
+    possible_paths = []
+
+    # Check github_url for repo name first (most reliable)
+    if project.github_url:
+        repo_name = project.github_url.rstrip("/").split("/")[-1].replace(".git", "")
+        possible_paths.extend([
+            f"/home/ubuntu/projects/{repo_name}",
+            f"/home/ubuntu/{repo_name}",
+            f"/home/ubuntu/repos/{repo_name}",
+        ])
+
+    # Then try variations of project name
+    possible_paths.extend([
+        f"/home/ubuntu/projects/{project_name}",
+        f"/home/ubuntu/{project_name}",
+        f"/home/ubuntu/repos/{project_name}",
+        f"/home/ubuntu/projects/{project.name}",
+        f"/home/ubuntu/{project.name}",
+    ])
+
+    local_path = None
+    for path in possible_paths:
+        try:
+            result = subprocess.run(["git", "-C", path, "status"], capture_output=True, timeout=5)
+            if result.returncode == 0:
+                local_path = path
+                break
+        except:
+            pass
+
+    # If no local repo found, try to clone from github
+    if not local_path and project.github_url:
+        try:
+            import os
+            github_token = os.environ.get("GITHUB_TOKEN")
+            repo_name = project.github_url.rstrip("/").split("/")[-1].replace(".git", "")
+            clone_path = f"/home/ubuntu/projects/{repo_name}"
+            subprocess.run(["mkdir", "-p", "/home/ubuntu/projects"], capture_output=True)
+
+            # Use token for auth if available
+            if github_token and "github.com" in project.github_url:
+                auth_url = project.github_url.replace("https://", f"https://{github_token}@")
+            else:
+                auth_url = project.github_url
+
+            clone_result = subprocess.run(
+                ["git", "clone", "--depth", "1", auth_url, clone_path],
+                capture_output=True, text=True, timeout=60
+            )
+            if clone_result.returncode == 0:
+                local_path = clone_path
+                repo_info.append("(Repo cloned from GitHub)")
+        except:
+            pass
+
+    if local_path:
+        # Analyze local repo
+        try:
+            # Get README or other docs
+            for doc_file in ["README.md", "CLAUDE.md", "README.rst", "README.txt", "DEPLOYMENT_GUIDE.md"]:
+                readme_result = subprocess.run(
+                    ["cat", f"{local_path}/{doc_file}"],
+                    capture_output=True, text=True, timeout=5
+                )
+                if readme_result.returncode == 0 and readme_result.stdout.strip():
+                    repo_info.append(f"{doc_file}:\n{readme_result.stdout[:3000]}")
+                    break
+
+            # Get recent commits
+            log_result = subprocess.run(
+                ["git", "-C", local_path, "log", "--oneline", "-20"],
+                capture_output=True, text=True, timeout=5
+            )
+            if log_result.returncode == 0:
+                repo_info.append(f"Recent commits:\n{log_result.stdout}")
+
+            # Get file structure - list all code files
+            ls_result = subprocess.run(
+                ["ls", "-la", local_path],
+                capture_output=True, text=True, timeout=5
+            )
+            if ls_result.returncode == 0:
+                repo_info.append(f"Directory listing:\n{ls_result.stdout}")
+
+            # Get python/js files
+            for ext in ["*.py", "*.js", "*.ts"]:
+                find_result = subprocess.run(
+                    ["find", local_path, "-maxdepth", "2", "-name", ext],
+                    capture_output=True, text=True, timeout=10
+                )
+                if find_result.returncode == 0 and find_result.stdout.strip():
+                    files = [f.replace(local_path + "/", "") for f in find_result.stdout.strip().split("\n") if f][:30]
+                    if files:
+                        repo_info.append(f"Code files ({ext}):\n" + "\n".join(files))
+
+            # Get package.json or requirements.txt
+            for dep_file in ["package.json", "requirements.txt", "Cargo.toml", "go.mod", "pyproject.toml"]:
+                dep_result = subprocess.run(
+                    ["cat", f"{local_path}/{dep_file}"],
+                    capture_output=True, text=True, timeout=5
+                )
+                if dep_result.returncode == 0:
+                    repo_info.append(f"{dep_file}:\n{dep_result.stdout[:1500]}")
+                    break
+
+        except Exception as e:
+            repo_info.append(f"Error analyzing repo: {str(e)}")
+    else:
+        repo_info.append("No local repository found. Set up the repo path or clone it first.")
+
+    if not repo_info or (len(repo_info) == 1 and "No local" in repo_info[0]):
+        return {"message": "Could not find local repository", "description": None}
+
+    repo_text = "\n\n".join(repo_info)
+
+    prompt = f"""Write a 2-3 sentence executive summary for this project.
+
+PROJECT: {project.name}
+
+REPO INFO:
+{repo_text[:4000]}
+
+RULES:
+- Maximum 50 words total
+- One line: what it does
+- One line: key tech (language + main framework only)
+- No headers, bullets, or markdown
+- Plain text only
+- Be specific, not generic
+
+Example good output:
+"Automated trading bot for Polymarket prediction markets. Scans opportunities, executes trades via CLOB API, auto-redeems winners. Python, WebSockets, AWS."
+
+Write the summary now:"""
+
+    description = call_claude_cli(prompt)
+
+    if description:
+        project.description = description
+        db.commit()
+        return {"message": "Description generated from repo", "description": description}
+    else:
+        return {"message": "Failed to generate description", "description": None}
+
+
 @router.post("/{project_id}/generate-notes")
 def generate_project_notes(project_id: int, db: Session = Depends(get_db)):
     """Generate/refresh project notes from all project emails using AI"""

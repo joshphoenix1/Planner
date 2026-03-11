@@ -24,6 +24,16 @@
   border-left: 3px solid var(--accent);
 }
 
+.stat.clickable {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stat.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .stat.blue {
   border-left-color: #3b82f6;
 }

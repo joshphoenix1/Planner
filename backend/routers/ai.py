@@ -530,3 +530,90 @@ Respond in JSON format.
 
     except Exception as e:
         return {"error": str(e), "raw_response": result}
+
+
+@router.get("/recommendations")
+async def get_recommendations(db: Session = Depends(get_db)):
+    """AI assistant that analyzes emails, tasks, and messages to recommend priorities"""
+    from zoneinfo import ZoneInfo
+    NZT = ZoneInfo("Pacific/Auckland")
+    now = datetime.now(NZT)
+
+    # Get recent emails (last 7 days)
+    week_ago = now - timedelta(days=7)
+    emails = db.query(models.Email).filter(
+        models.Email.received_at >= week_ago
+    ).order_by(models.Email.received_at.desc()).limit(15).all()
+
+    # Get all active tasks
+    tasks = db.query(models.Task).filter(
+        models.Task.status.in_(["todo", "in_progress"])
+    ).order_by(models.Task.due_date.asc().nullslast()).limit(20).all()
+
+    # Get upcoming calendar events
+    calendar = db.query(models.CalendarEvent).filter(
+        models.CalendarEvent.start_time >= now.isoformat()
+    ).order_by(models.CalendarEvent.start_time.asc()).limit(10).all()
+
+    # Get projects for context
+    projects = db.query(models.Project).all()
+    project_map = {p.id: p.name for p in projects}
+
+    # Build context for AI
+    email_summaries = []
+    for e in emails[:10]:
+        proj_name = project_map.get(e.project_id, "Unassigned")
+        email_summaries.append(f"- [{proj_name}] From: {e.sender} | Subject: {e.subject} | {e.snippet[:100] if e.snippet else ''}")
+
+    task_summaries = []
+    for t in tasks:
+        proj_name = project_map.get(t.project_id, "Unknown")
+        due = f"Due: {t.due_date.strftime('%b %d')}" if t.due_date else "No due date"
+        task_summaries.append(f"- [{proj_name}] {t.title} | {t.priority} priority | {due} | Status: {t.status}")
+
+    calendar_summaries = []
+    for c in calendar[:5]:
+        calendar_summaries.append(f"- {c.title} | {c.start_time}")
+
+    prompt = f"""You are a smart project assistant. Analyze the user's current workload and provide actionable recommendations.
+
+CURRENT DATE/TIME: {now.strftime('%A, %B %d, %Y %I:%M %p')} (NZT)
+
+RECENT EMAILS ({len(emails)} total):
+{chr(10).join(email_summaries) if email_summaries else 'No recent emails'}
+
+ACTIVE TASKS ({len(tasks)} total):
+{chr(10).join(task_summaries) if task_summaries else 'No active tasks'}
+
+UPCOMING CALENDAR:
+{chr(10).join(calendar_summaries) if calendar_summaries else 'No upcoming events'}
+
+Based on this information, provide:
+
+1. **Top 3 Priority Actions** - What should be done RIGHT NOW? Consider due dates, urgency in emails, and upcoming meetings.
+
+2. **Emails Requiring Response** - Any emails that seem to need a reply or action?
+
+3. **Blocked or At-Risk Items** - Tasks that might be delayed or need attention?
+
+4. **Today's Focus** - A simple 2-3 bullet summary of what to focus on today.
+
+Be concise and actionable. Use markdown formatting."""
+
+    try:
+        result = await call_claude(prompt)
+        return {
+            "recommendations": result,
+            "generated_at": now.isoformat(),
+            "context": {
+                "emails_analyzed": len(emails),
+                "tasks_analyzed": len(tasks),
+                "events_analyzed": len(calendar)
+            }
+        }
+    except Exception as e:
+        return {
+            "recommendations": None,
+            "error": str(e),
+            "generated_at": now.isoformat()
+        }
