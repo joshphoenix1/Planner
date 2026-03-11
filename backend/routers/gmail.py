@@ -92,6 +92,36 @@ def call_claude_cli(prompt: str) -> Optional[str]:
     return None
 
 
+def update_project_notes(project_id: int, subject: str, body: str, sender: str, db: Session):
+    """Update project notes with new email information"""
+    try:
+        project = db.query(models.Project).filter(models.Project.id == project_id).first()
+        if not project:
+            return
+
+        current_notes = project.notes or ""
+
+        # Use AI to generate an update
+        prompt = f"""Given this existing project summary and a new email, provide an updated summary.
+
+CURRENT SUMMARY:
+{current_notes[:2000] if current_notes else 'No existing summary.'}
+
+NEW EMAIL:
+Subject: {subject}
+From: {sender}
+Body preview: {body[:1500]}
+
+Write an updated project summary that incorporates any new information from this email. Keep it concise (under 500 words). Use markdown format. Include any new action items, dates, or status updates."""
+
+        updated_notes = call_claude_cli(prompt)
+        if updated_notes and len(updated_notes) > 50:
+            project.notes = updated_notes
+            db.commit()
+    except:
+        pass
+
+
 def extract_tasks_from_email(subject: str, body: str, sender: str, project_id: int, db: Session) -> int:
     """Use AI to extract actionable tasks from email content"""
     if not project_id:
@@ -406,6 +436,9 @@ def sync_emails(project_id: Optional[int] = None, max_emails: int = 50, db: Sess
                         tasks_created += new_tasks
                         filter_tasks += new_tasks
 
+                        # Update project notes with new email info
+                        update_project_notes(target_project_id, subject, body, sender, db)
+
                 except Exception as e:
                     continue
 
@@ -484,6 +517,271 @@ def delete_email(email_id: int, block_sender: bool = False, db: Session = Depend
     db.delete(email_obj)
     db.commit()
     return {"message": "Email deleted", "blocked": blocked_address}
+
+
+@router.put("/emails/{email_id}/assign/{project_id}")
+def assign_email_to_project(email_id: int, project_id: int, db: Session = Depends(get_db)):
+    """Assign an email to an existing project"""
+    email_obj = db.query(models.Email).filter(models.Email.id == email_id).first()
+    if not email_obj:
+        raise HTTPException(status_code=404, detail="Email not found")
+
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    email_obj.project_id = project_id
+    db.commit()
+
+    return {"message": f"Email assigned to {project.name}", "project_id": project_id}
+
+
+@router.post("/emails/{email_id}/create-project")
+def create_project_from_email(email_id: int, create_repo: bool = True, db: Session = Depends(get_db)):
+    """Create a new project from an email, with auto-created filter and git repo"""
+    import subprocess
+    import re
+
+    email_obj = db.query(models.Email).filter(models.Email.id == email_id).first()
+    if not email_obj:
+        raise HTTPException(status_code=404, detail="Email not found")
+
+    # Extract sender email address
+    sender = email_obj.sender
+    sender_email = sender.strip().lower()
+    if "<" in sender and ">" in sender:
+        sender_email = sender.split("<")[1].split(">")[0].strip().lower()
+
+    # Extract sender name for project name
+    sender_name = sender.split("<")[0].strip() if "<" in sender else sender.split("@")[0]
+    sender_name = sender_name.strip('"').strip("'").strip()
+
+    # Use AI to suggest a project name if available
+    project_name = sender_name
+    project_description = f"Project created from email: {email_obj.subject}"
+
+    # Try to get a better name from AI
+    try:
+        prompt = f"""Based on this email, suggest a short project name (2-4 words max).
+
+Subject: {email_obj.subject}
+From: {sender}
+Body preview: {email_obj.snippet[:500] if email_obj.snippet else ''}
+
+Return ONLY the project name, nothing else."""
+
+        ai_name = call_claude_cli(prompt)
+        if ai_name and len(ai_name) < 50:
+            project_name = ai_name.strip().strip('"').strip("'")
+    except:
+        pass
+
+    # Create repo-safe name (lowercase, hyphens, no special chars)
+    repo_name = re.sub(r'[^a-zA-Z0-9\s-]', '', project_name)
+    repo_name = re.sub(r'\s+', '-', repo_name).strip('-').lower()
+    if not repo_name:
+        repo_name = f"project-{email_id}"
+
+    # Generate project notes/summary using AI
+    project_notes = ""
+    try:
+        notes_prompt = f"""Analyze this email and create a project summary. Include:
+1. What this project is about (1-2 sentences)
+2. Key stakeholders or contacts
+3. Important dates or deadlines mentioned
+4. Current status or next steps
+
+Email Subject: {email_obj.subject}
+From: {sender}
+Body: {email_obj.body[:3000] if email_obj.body else email_obj.snippet[:1000]}
+
+Return a concise summary in markdown format."""
+
+        project_notes = call_claude_cli(notes_prompt) or ""
+    except:
+        project_notes = f"Project initiated from email: {email_obj.subject}\nFrom: {sender}"
+
+    # Create the project
+    new_project = models.Project(
+        name=project_name,
+        description=project_description,
+        notes=project_notes
+    )
+    db.add(new_project)
+    db.flush()  # Get the ID
+
+    # Extract and create tasks from the email
+    tasks_created = 0
+    try:
+        tasks_prompt = f"""Analyze this email and extract actionable tasks.
+
+Email Subject: {email_obj.subject}
+From: {sender}
+Body: {email_obj.body[:3000] if email_obj.body else email_obj.snippet[:1000]}
+
+Extract specific, actionable tasks. For each task include:
+- title: Clear task title
+- priority: low/medium/high/urgent
+- description: Brief context
+
+Return as JSON array: [{{"title": "...", "priority": "...", "description": "..."}}]
+If no clear tasks, return []"""
+
+        tasks_text = call_claude_cli(tasks_prompt)
+        if tasks_text:
+            # Handle markdown code blocks
+            if "```" in tasks_text:
+                tasks_text = tasks_text.split("```")[1]
+                if tasks_text.startswith("json"):
+                    tasks_text = tasks_text[4:]
+
+            tasks_data = json.loads(tasks_text.strip())
+            for task_data in tasks_data[:10]:  # Max 10 tasks
+                if task_data.get("title"):
+                    db_task = models.Task(
+                        project_id=new_project.id,
+                        title=task_data["title"][:200],
+                        description=task_data.get("description", ""),
+                        priority=task_data.get("priority", "medium"),
+                        status="todo"
+                    )
+                    db.add(db_task)
+                    tasks_created += 1
+    except:
+        pass
+
+    # Create an email filter for this project
+    domain = sender_email.split("@")[-1] if "@" in sender_email else ""
+    filter_address = f"*@{domain}" if domain else sender_email
+
+    new_filter = models.EmailFilter(
+        name=f"{project_name} Emails",
+        project_id=new_project.id,
+        from_addresses=filter_address,
+        keywords=None,
+        is_active=True
+    )
+    db.add(new_filter)
+
+    # Update the email to link to the new project
+    email_obj.project_id = new_project.id
+
+    github_url = None
+    repo_path = None
+
+    # Create git repo if requested
+    if create_repo:
+        github_token = os.environ.get("GITHUB_TOKEN")
+        projects_dir = "/home/ubuntu/projects"
+        repo_path = f"{projects_dir}/{repo_name}"
+
+        try:
+            # Create projects directory if needed
+            os.makedirs(projects_dir, exist_ok=True)
+
+            # Create project directory
+            os.makedirs(repo_path, exist_ok=True)
+
+            # Create README.md
+            readme_content = f"""# {project_name}
+
+{project_description}
+
+## Source
+- **From:** {sender}
+- **Subject:** {email_obj.subject}
+- **Date:** {email_obj.received_at}
+
+## Overview
+{email_obj.snippet[:1000] if email_obj.snippet else 'No content available.'}
+"""
+            with open(f"{repo_path}/README.md", "w") as f:
+                f.write(readme_content)
+
+            # Initialize git repo
+            subprocess.run(["git", "init"], cwd=repo_path, capture_output=True)
+            subprocess.run(["git", "add", "."], cwd=repo_path, capture_output=True)
+            subprocess.run(
+                ["git", "commit", "-m", "Initial commit: Project created from email"],
+                cwd=repo_path, capture_output=True
+            )
+
+            # Create GitHub repo if token available
+            if github_token:
+                # Get GitHub username
+                user_resp = httpx.get(
+                    "https://api.github.com/user",
+                    headers={"Authorization": f"token {github_token}"}
+                )
+                if user_resp.status_code == 200:
+                    github_user = user_resp.json().get("login")
+
+                    # Create repo
+                    create_resp = httpx.post(
+                        "https://api.github.com/user/repos",
+                        headers={
+                            "Authorization": f"token {github_token}",
+                            "Accept": "application/vnd.github+json"
+                        },
+                        json={
+                            "name": repo_name,
+                            "description": project_description[:255],
+                            "private": False
+                        }
+                    )
+
+                    if create_resp.status_code == 201:
+                        github_url = f"https://github.com/{github_user}/{repo_name}"
+                        clone_url = f"https://{github_token}@github.com/{github_user}/{repo_name}.git"
+
+                        # Add remote and push
+                        subprocess.run(
+                            ["git", "remote", "add", "origin", clone_url],
+                            cwd=repo_path, capture_output=True
+                        )
+                        subprocess.run(
+                            ["git", "branch", "-M", "main"],
+                            cwd=repo_path, capture_output=True
+                        )
+                        subprocess.run(
+                            ["git", "push", "-u", "origin", "main"],
+                            cwd=repo_path, capture_output=True
+                        )
+
+                        # Update project with GitHub info
+                        new_project.github_url = github_url
+                        new_project.github_repo = f"{github_user}/{repo_name}"
+
+        except Exception as e:
+            # Don't fail the whole request if repo creation fails
+            pass
+
+    db.commit()
+    db.refresh(new_project)
+    db.refresh(new_filter)
+
+    result = {
+        "project": {
+            "id": new_project.id,
+            "name": new_project.name,
+            "description": new_project.description,
+            "github_url": new_project.github_url,
+            "notes": new_project.notes
+        },
+        "tasks_created": tasks_created,
+        "filter": {
+            "id": new_filter.id,
+            "name": new_filter.name,
+            "from_addresses": new_filter.from_addresses
+        },
+        "repo_path": repo_path,
+        "message": f"Created project '{new_project.name}' with email filter for {filter_address}"
+    }
+
+    if github_url:
+        result["message"] += f" and GitHub repo at {github_url}"
+
+    return result
 
 
 # Calendar - extract from email invites

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { api } from '../api/client';
 import { useApi } from '../hooks/useApi';
@@ -44,13 +44,25 @@ export default function BoardPage() {
     if (!over) return;
 
     const taskId = active.id;
-    const newStatus = over.id;
+    let newStatus = over.id;
 
+    // Check if dropped on a column
     if (STATUSES.some(s => s.id === newStatus)) {
       const task = tasks.find(t => t.id === taskId);
       if (task && task.status !== newStatus) {
         await api.updateTask(taskId, { status: newStatus });
         refetchTasks();
+      }
+    } else {
+      // Dropped on another task - get that task's status
+      const overTask = tasks.find(t => t.id === over.id);
+      if (overTask) {
+        newStatus = overTask.status;
+        const task = tasks.find(t => t.id === taskId);
+        if (task && task.status !== newStatus) {
+          await api.updateTask(taskId, { status: newStatus });
+          refetchTasks();
+        }
       }
     }
   };
@@ -80,6 +92,8 @@ export default function BoardPage() {
 
   const activeTask = tasks?.find(t => t.id === activeId);
 
+  const [showNotes, setShowNotes] = useState(false);
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -87,10 +101,29 @@ export default function BoardPage() {
           <Link to="/projects" className={styles.back}>Projects</Link>
           <h1>{project?.name || 'Board'}</h1>
         </div>
-        <button className={styles.createBtn} onClick={() => setShowTaskModal(true)}>
-          + New Task
-        </button>
+        <div className={styles.headerActions}>
+          {project?.notes && (
+            <button
+              className={styles.notesToggle}
+              onClick={() => setShowNotes(!showNotes)}
+            >
+              {showNotes ? 'Hide Notes' : 'Show Notes'}
+            </button>
+          )}
+          <button className={styles.createBtn} onClick={() => setShowTaskModal(true)}>
+            + New Task
+          </button>
+        </div>
       </header>
+
+      {showNotes && project?.notes && (
+        <div className={styles.notesPanel}>
+          <h3>Project Notes</h3>
+          <div className={styles.notesContent}>
+            {project.notes}
+          </div>
+        </div>
+      )}
 
       <DndContext
         sensors={sensors}
@@ -100,30 +133,25 @@ export default function BoardPage() {
       >
         <div className={styles.board}>
           {STATUSES.map((status) => (
-            <div key={status.id} className={styles.column}>
-              <div className={styles.columnHeader}>
-                <div className={styles.statusDot} style={{ background: status.color }} />
-                <span>{status.label}</span>
-                <span className={styles.count}>{getTasksByStatus(status.id).length}</span>
-              </div>
-
+            <DroppableColumn key={status.id} status={status}>
               <SortableContext
                 id={status.id}
                 items={getTasksByStatus(status.id).map(t => t.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className={styles.tasks} data-status={status.id}>
-                  {getTasksByStatus(status.id).map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      onClick={() => setEditTask(task)}
-                      onDelete={() => handleDeleteTask(task.id)}
-                    />
-                  ))}
-                </div>
+                {getTasksByStatus(status.id).map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onClick={() => setEditTask(task)}
+                    onDelete={() => handleDeleteTask(task.id)}
+                  />
+                ))}
+                {getTasksByStatus(status.id).length === 0 && (
+                  <div className={styles.emptyColumn}>Drop tasks here</div>
+                )}
               </SortableContext>
-            </div>
+            </DroppableColumn>
           ))}
         </div>
 
@@ -155,6 +183,26 @@ export default function BoardPage() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function DroppableColumn({ status, children }) {
+  const { setNodeRef, isOver } = useDroppable({ id: status.id });
+
+  return (
+    <div className={styles.column}>
+      <div className={styles.columnHeader}>
+        <div className={styles.statusDot} style={{ background: status.color }} />
+        <span>{status.label}</span>
+      </div>
+      <div
+        ref={setNodeRef}
+        className={`${styles.tasks} ${isOver ? styles.tasksOver : ''}`}
+        data-status={status.id}
+      >
+        {children}
+      </div>
     </div>
   );
 }

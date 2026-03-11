@@ -92,6 +92,8 @@ export const api = {
     return request(`/gmail/emails${query ? `?${query}` : ''}`);
   },
   deleteEmail: (id, blockSender = false) => request(`/gmail/emails/${id}?block_sender=${blockSender}`, { method: 'DELETE' }),
+  createProjectFromEmail: (emailId) => request(`/gmail/emails/${emailId}/create-project`, { method: 'POST' }),
+  assignEmailToProject: (emailId, projectId) => request(`/gmail/emails/${emailId}/assign/${projectId}`, { method: 'PUT' }),
 
   // Calendar
   syncCalendar: () => request('/gmail/sync-calendar', { method: 'POST' }),

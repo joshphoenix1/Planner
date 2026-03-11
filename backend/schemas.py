@@ -144,6 +144,7 @@ class Sprint(SprintBase):
 class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
+    notes: Optional[str] = None
     github_url: Optional[str] = None
     github_repo: Optional[str] = None
     color: str = "#6366f1"
@@ -154,6 +155,7 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    notes: Optional[str] = None
     github_url: Optional[str] = None
     github_repo: Optional[str] = None
     color: Optional[str] = None

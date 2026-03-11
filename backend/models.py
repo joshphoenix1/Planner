@@ -18,6 +18,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)
+    notes = Column(Text)  # AI-generated summary, updated with new emails
     github_url = Column(String(500))
     github_repo = Column(String(255))  # owner/repo format
     color = Column(String(7), default="#6366f1")  # hex color

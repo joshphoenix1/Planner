@@ -95,7 +95,7 @@
 
 .content {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 1.5rem;
   flex: 1;
   min-height: 0;
@@ -179,11 +179,59 @@
   flex-direction: column;
 }
 
+.emailListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
 .emailList h3 {
   font-size: 0.875rem;
   font-weight: 600;
-  margin-bottom: 1rem;
   color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.emailControls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.sortSelect {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.searchInput {
+  width: 150px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
 }
 
 .emails {
@@ -197,7 +245,7 @@
 .emailCard {
   background: var(--bg-tertiary);
   border-radius: 6px;
-  padding: 1rem;
+  padding: 1.25rem;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -214,7 +262,7 @@
 }
 
 .sender {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--text-secondary);
 }
 
@@ -230,6 +278,37 @@
   color: white;
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
+}
+
+.assignSelect {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.25rem;
+  font-size: 0.625rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  max-width: 90px;
+}
+
+.assignSelect:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.createProjBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.createProjBtn:hover {
+  background: var(--accent-hover);
 }
 
 .blockBtn {
@@ -289,17 +368,18 @@
 
 .subject {
   font-weight: 500;
-  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  margin-bottom: 0.375rem;
 }
 
 .snippet {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--text-muted);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .empty {
@@ -379,4 +459,31 @@
   white-space: pre-wrap;
   font-size: 0.875rem;
   line-height: 1.6;
+}
+
+.emailActions2 {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.75rem;
+}
+
+.createProjectBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.createProjectBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.createProjectBtn:hover:not(:disabled) {
+  background: var(--accent-hover);
 }

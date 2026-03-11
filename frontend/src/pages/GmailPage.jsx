@@ -13,6 +13,22 @@ export default function GmailPage() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
+  const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState('newest');
+
+  const filteredEmails = (emails?.filter(email => {
+    if (!search.trim()) return true;
+    const term = search.toLowerCase();
+    return (
+      email.subject?.toLowerCase().includes(term) ||
+      email.sender?.toLowerCase().includes(term) ||
+      email.snippet?.toLowerCase().includes(term)
+    );
+  }) || []).sort((a, b) => {
+    const dateA = new Date(a.received_at);
+    const dateB = new Date(b.received_at);
+    return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+  });
 
   const handleSync = async () => {
     setSyncing(true);
@@ -48,6 +64,34 @@ export default function GmailPage() {
         refetchFilters();
       }
       refetchEmails();
+    }
+  };
+
+  const handleCreateProject = async (emailId) => {
+    try {
+      const result = await api.createProjectFromEmail(emailId);
+      let msg = result.message;
+      if (result.project?.github_url) {
+        msg += `\n\nGitHub: ${result.project.github_url}`;
+      }
+      if (result.repo_path) {
+        msg += `\nLocal: ${result.repo_path}`;
+      }
+      alert(msg);
+      refetchFilters();
+      refetchEmails();
+      setSelectedEmail(null);
+    } catch (err) {
+      alert('Error creating project: ' + err.message);
+    }
+  };
+
+  const handleAssignProject = async (emailId, projectId) => {
+    try {
+      await api.assignEmailToProject(emailId, projectId);
+      refetchEmails();
+    } catch (err) {
+      alert('Error assigning project: ' + err.message);
     }
   };
 
@@ -147,9 +191,28 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
         </aside>
 
         <main className={styles.emailList}>
-          <h3>Synced Emails ({emails?.length || 0})</h3>
+          <div className={styles.emailListHeader}>
+            <h3>Synced Emails ({filteredEmails.length}{search ? ` / ${emails?.length || 0}` : ''})</h3>
+            <div className={styles.emailControls}>
+              <select
+                className={styles.sortSelect}
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
           <div className={styles.emails}>
-            {emails?.map((email) => (
+            {filteredEmails.map((email) => (
               <div
                 key={email.id}
                 className={styles.emailCard}
@@ -158,10 +221,27 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
                 <div className={styles.emailHeader}>
                   <span className={styles.sender}>{email.sender}</span>
                   <div className={styles.emailActions}>
-                    {email.project_id && (
+                    {email.project_id ? (
                       <span className={styles.projectTag}>
                         {projects?.find(p => p.id === email.project_id)?.name}
                       </span>
+                    ) : (
+                      <select
+                        className={styles.assignSelect}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleAssignProject(email.id, parseInt(e.target.value));
+                            e.target.value = '';
+                          }
+                        }}
+                        title="Assign to existing project"
+                      >
+                        <option value="">Assign...</option>
+                        {projects?.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
                     )}
                     <button
                       className={styles.blockBtn}
@@ -183,8 +263,10 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
                 <div className={styles.snippet}>{email.snippet}</div>
               </div>
             ))}
-            {(!emails || emails.length === 0) && (
-              <p className={styles.empty}>No emails synced yet. Create a filter and click Sync.</p>
+            {filteredEmails.length === 0 && (
+              <p className={styles.empty}>
+                {search ? 'No emails match your search.' : 'No emails synced yet. Create a filter and click Sync.'}
+              </p>
             )}
           </div>
         </main>
@@ -202,6 +284,7 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
         <EmailModal
           email={selectedEmail}
           onClose={() => setSelectedEmail(null)}
+          onCreateProject={handleCreateProject}
         />
       )}
     </div>
@@ -281,7 +364,18 @@ function FilterModal({ projects, onClose, onSubmit }) {
   );
 }
 
-function EmailModal({ email, onClose }) {
+function EmailModal({ email, onClose, onCreateProject }) {
+  const [creating, setCreating] = useState(false);
+
+  const handleCreateProject = async () => {
+    setCreating(true);
+    try {
+      await onCreateProject(email.id);
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <Modal onClose={onClose} title={email.subject || '(No Subject)'} wide>
       <div className={styles.emailDetail}>
@@ -290,6 +384,15 @@ function EmailModal({ email, onClose }) {
         </div>
         <div className={styles.emailBody}>
           {email.body || email.snippet}
+        </div>
+        <div className={styles.emailActions2}>
+          <button
+            onClick={handleCreateProject}
+            disabled={creating}
+            className={styles.createProjectBtn}
+          >
+            {creating ? 'Creating...' : 'Create Project from Email'}
+          </button>
         </div>
       </div>
     </Modal>

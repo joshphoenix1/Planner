@@ -23,6 +23,25 @@
   margin-bottom: 0.25rem;
 }
 
+.headerActions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.notesToggle {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.notesToggle:hover {
+  background: var(--border);
+}
+
 .createBtn {
   background: var(--accent);
   color: white;
@@ -34,6 +53,29 @@
 
 .createBtn:hover {
   background: var(--accent-hover);
+}
+
+.notesPanel {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.notesPanel h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.notesContent {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--text-primary);
 }
 
 .board {
@@ -86,6 +128,21 @@
   flex-direction: column;
   gap: 0.5rem;
   min-height: 100px;
+  transition: background 0.15s;
+}
+
+.tasksOver {
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 6px;
+}
+
+.emptyColumn {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  border: 2px dashed var(--border);
+  border-radius: 6px;
 }
 
 /* Form styles */
